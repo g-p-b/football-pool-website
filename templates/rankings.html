@@ -1,26 +1,24 @@
-{% extends "base.html" %}
+{% extends "admin/base.html" if session.is_admin else "base.html" %}
 {% block title %}Rankings — Football Pool{% endblock %}
-{% block body %}
+{% block content %}
+{% if not session.is_admin %}
 <nav class="navbar">
     <div class="nav-brand">
         <span>⚽</span> Football Pool
         {% if selected_season %}<span class="season-badge">{{ selected_season['name'] }}</span>{% endif %}
     </div>
     <div class="nav-links">
-        <a href="/dashboard" class="nav-link">
-            <i class="fa fa-house"></i> Dashboard
-        </a>
-        <a href="/rankings" class="nav-link active">
-            <i class="fa fa-ranking-star"></i> Rankings
-        </a>
+        <a href="/dashboard" class="nav-link"><i class="fa fa-house"></i> Dashboard</a>
+        <a href="/rankings" class="nav-link active"><i class="fa fa-ranking-star"></i> Rankings</a>
     </div>
     <div class="nav-right">
         <span class="nav-user"><i class="fa fa-user-circle"></i> {{ session.display_name }}</span>
         <a href="/logout" class="btn btn-ghost btn-sm"><i class="fa fa-right-from-bracket"></i> Logout</a>
     </div>
 </nav>
+{% endif %}
 
-<div class="page-container">
+<div class="{% if session.is_admin %}admin-container{% else %}page-container{% endif %}">
     <div class="page-header">
         <h1 style="font-size:1.5rem;font-weight:800;display:flex;align-items:center;gap:10px;">
             <i class="fa fa-ranking-star" style="color:var(--green)"></i> Rankings
@@ -144,4 +142,4 @@
     </div>
     {% endif %}
 </div>
-{% endblock %}
+{% endblock content %}
