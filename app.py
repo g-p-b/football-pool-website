@@ -1,12 +1,24 @@
 from flask import Flask
+from flask.json.provider import DefaultJSONProvider
 from database import init_db
 from routes.auth import auth_bp
 from routes.admin import admin_bp
 from routes.api import api_bp
+import sqlite3
 import os
 from datetime import datetime
 
+
+class Row2DictProvider(DefaultJSONProvider):
+    def default(self, obj):
+        if isinstance(obj, sqlite3.Row):
+            return dict(obj)
+        return super().default(obj)
+
+
 app = Flask(__name__)
+app.json_provider_class = Row2DictProvider
+app.json = Row2DictProvider(app)
 app.secret_key = os.environ.get('SECRET_KEY', 'fp-secret-change-in-production-2024')
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
