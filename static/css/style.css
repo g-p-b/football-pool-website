@@ -911,6 +911,104 @@ select option { background: var(--bg5); }
     overflow-x: auto;
 }
 
+/* ─── Nav Links (user navbar) ───────────────────────────────────────────── */
+.nav-links {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: var(--r-sm);
+    color: var(--text2);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: var(--transition);
+    text-decoration: none;
+}
+.nav-link:hover { background: var(--bg4); color: var(--text1); }
+.nav-link.active { background: var(--green-bg); color: var(--green); }
+
+/* ─── Podium ────────────────────────────────────────────────────────────── */
+.podium {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 28px;
+    padding: 20px 0 0;
+}
+.podium-place {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-width: 120px;
+}
+.podium-crown { font-size: 1.8rem; line-height: 1; margin-bottom: 2px; }
+.podium-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--bg5);
+    border: 2px solid var(--border2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--text2);
+}
+.podium-avatar.gold { background: var(--gold-bg); border-color: var(--gold); color: var(--gold); }
+.podium-avatar.bronze { background: rgba(205,127,50,0.1); border-color: #cd7f32; color: #cd7f32; }
+.podium-name { font-size: 0.9rem; font-weight: 600; text-align: center; }
+.podium-pts { font-size: 0.8rem; color: var(--text2); }
+.gold-text { color: var(--gold) !important; font-weight: 700; }
+.podium-block {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--r-sm) var(--r-sm) 0 0;
+    margin-top: 8px;
+}
+.p1 { height: 80px; background: linear-gradient(180deg, var(--gold-bg), transparent); border-top: 2px solid var(--gold); }
+.p2 { height: 56px; background: linear-gradient(180deg, rgba(173,181,189,0.08), transparent); border-top: 2px solid #adb5bd; }
+.p3 { height: 40px; background: linear-gradient(180deg, rgba(205,127,50,0.08), transparent); border-top: 2px solid #cd7f32; }
+.podium-rank { font-size: 1.1rem; font-weight: 800; color: var(--text3); }
+
+/* ─── Rankings Table ────────────────────────────────────────────────────── */
+.rankings-table .pts-big { font-size: 1.05rem; font-weight: 800; color: var(--green); }
+.rankings-table .wins-count { font-weight: 700; color: var(--text1); }
+.rankings-table .exact-count { color: var(--green); font-weight: 600; }
+.rankings-table .correct-count { color: var(--gold); font-weight: 600; }
+.rankings-table .wrong-count { color: var(--text3); }
+.rankings-table .rank-num { color: var(--text2); font-weight: 600; }
+.player-name { font-weight: 600; }
+.win-rate { font-weight: 700; font-size: 0.9rem; }
+.win-rate.high { color: var(--green); }
+.win-rate.mid { color: var(--gold); }
+.win-rate.low { color: var(--red); }
+.progress-cell { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+.progress-bar-wrap {
+    flex: 1;
+    height: 6px;
+    background: var(--bg5);
+    border-radius: 3px;
+    overflow: hidden;
+}
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green-d), var(--green));
+    border-radius: 3px;
+    transition: width 0.4s ease;
+    min-width: 2px;
+}
+.progress-label { font-size: 0.75rem; color: var(--text2); white-space: nowrap; }
+
 /* ─── Responsive ────────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
     .stats-bar { grid-template-columns: repeat(2, 1fr); }

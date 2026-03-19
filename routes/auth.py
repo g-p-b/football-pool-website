@@ -68,7 +68,7 @@ def dashboard():
             return render_template('dashboard.html',
                 matches=[], leaderboard=[],
                 stats={'rank': '-', 'points': 0, 'bets': 0, 'exact_scores': 0},
-                season=None, now=datetime.now())
+                season=None)
 
         matches = conn.execute('''
             SELECT m.*,
@@ -104,3 +104,40 @@ def dashboard():
     return render_template('dashboard.html',
         matches=matches, leaderboard=leaderboard,
         stats=stats, season=season)
+
+
+@auth_bp.route('/rankings')
+@login_required
+def rankings():
+    with get_db() as conn:
+        seasons = conn.execute('SELECT * FROM seasons ORDER BY is_active DESC, created_at DESC').fetchall()
+        active_season = conn.execute('SELECT * FROM seasons WHERE is_active = 1').fetchone()
+
+        season_id = request.args.get('season_id', active_season['id'] if active_season else None)
+        selected_season = conn.execute('SELECT * FROM seasons WHERE id = ?', (season_id,)).fetchone() if season_id else None
+
+        leaderboard = []
+        max_points = 1
+        if selected_season:
+            leaderboard = conn.execute('''
+                SELECT u.id, u.display_name,
+                    COALESCE(SUM(b.points), 0) as total_points,
+                    COUNT(CASE WHEN b.points = 3 THEN 1 END) as exact_scores,
+                    COUNT(CASE WHEN b.points = 1 THEN 1 END) as correct_results,
+                    COUNT(CASE WHEN b.points = 0 THEN 1 END) as wrong,
+                    COUNT(CASE WHEN b.points IS NOT NULL THEN 1 END) as resolved_bets,
+                    COUNT(b.id) as total_bets,
+                    COUNT(CASE WHEN b.points >= 1 THEN 1 END) as wins
+                FROM users u
+                LEFT JOIN bets b ON b.user_id = u.id
+                LEFT JOIN matches m ON m.id = b.match_id AND m.season_id = ?
+                WHERE u.is_admin = 0 AND u.is_active = 1
+                GROUP BY u.id
+                ORDER BY total_points DESC, exact_scores DESC, wins DESC
+            ''', (selected_season['id'],)).fetchall()
+            if leaderboard:
+                max_points = max(e['total_points'] for e in leaderboard) or 1
+
+    return render_template('rankings.html',
+        leaderboard=leaderboard, seasons=seasons,
+        selected_season=selected_season, max_points=max_points)

@@ -6,6 +6,14 @@
         <span>⚽</span> Football Pool
         {% if season %}<span class="season-badge">{{ season['name'] }}</span>{% endif %}
     </div>
+    <div class="nav-links">
+        <a href="/dashboard" class="nav-link active">
+            <i class="fa fa-house"></i> Dashboard
+        </a>
+        <a href="/rankings" class="nav-link">
+            <i class="fa fa-ranking-star"></i> Rankings
+        </a>
+    </div>
     <div class="nav-right">
         <span class="nav-user"><i class="fa fa-user-circle"></i> {{ session.display_name }}</span>
         <a href="/logout" class="btn btn-ghost btn-sm"><i class="fa fa-right-from-bracket"></i> Logout</a>
