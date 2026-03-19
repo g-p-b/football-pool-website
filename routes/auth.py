@@ -1,0 +1,106 @@
+from flask import Blueprint, render_template, request, redirect, url_for, session
+from werkzeug.security import check_password_hash
+from database import get_db
+from functools import wraps
+
+auth_bp = Blueprint('auth', __name__)
+
+
+def login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if 'user_id' not in session:
+            return redirect(url_for('auth.login'))
+        return f(*args, **kwargs)
+    return decorated
+
+
+def admin_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if 'user_id' not in session or not session.get('is_admin'):
+            return redirect(url_for('auth.dashboard'))
+        return f(*args, **kwargs)
+    return decorated
+
+
+@auth_bp.route('/')
+def index():
+    if 'user_id' in session:
+        return redirect(url_for('admin.dashboard') if session.get('is_admin') else url_for('auth.dashboard'))
+    return redirect(url_for('auth.login'))
+
+
+@auth_bp.route('/login', methods=['GET', 'POST'])
+def login():
+    if 'user_id' in session:
+        return redirect(url_for('auth.index'))
+    error = None
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+        with get_db() as conn:
+            user = conn.execute(
+                'SELECT * FROM users WHERE username = ? AND is_active = 1', (username,)
+            ).fetchone()
+        if user and check_password_hash(user['password'], password):
+            session['user_id'] = user['id']
+            session['username'] = user['username']
+            session['display_name'] = user['display_name']
+            session['is_admin'] = bool(user['is_admin'])
+            return redirect(url_for('admin.dashboard') if user['is_admin'] else url_for('auth.dashboard'))
+        error = 'Invalid username or password'
+    return render_template('login.html', error=error)
+
+
+@auth_bp.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('auth.login'))
+
+
+@auth_bp.route('/dashboard')
+@login_required
+def dashboard():
+    with get_db() as conn:
+        season = conn.execute('SELECT * FROM seasons WHERE is_active = 1').fetchone()
+        if not season:
+            return render_template('dashboard.html',
+                matches=[], leaderboard=[],
+                stats={'rank': '-', 'points': 0, 'bets': 0, 'exact_scores': 0},
+                season=None, now=datetime.now())
+
+        matches = conn.execute('''
+            SELECT m.*,
+                b.home_score as bet_home, b.away_score as bet_away, b.points as bet_points
+            FROM matches m
+            LEFT JOIN bets b ON b.match_id = m.id AND b.user_id = ?
+            WHERE m.season_id = ?
+            ORDER BY m.match_date ASC
+        ''', (session['user_id'], season['id'])).fetchall()
+
+        leaderboard = conn.execute('''
+            SELECT u.id, u.display_name,
+                COALESCE(SUM(b.points), 0) as total_points,
+                COUNT(CASE WHEN b.points = 3 THEN 1 END) as exact_scores,
+                COUNT(CASE WHEN b.points >= 1 THEN 1 END) as correct_results,
+                COUNT(b.id) as total_bets
+            FROM users u
+            LEFT JOIN bets b ON b.user_id = u.id
+            LEFT JOIN matches m ON m.id = b.match_id AND m.season_id = ?
+            WHERE u.is_admin = 0 AND u.is_active = 1
+            GROUP BY u.id
+            ORDER BY total_points DESC, exact_scores DESC
+        ''', (season['id'],)).fetchall()
+
+    rank = next((i + 1 for i, e in enumerate(leaderboard) if e['id'] == session['user_id']), '-')
+    user_entry = next((e for e in leaderboard if e['id'] == session['user_id']), None)
+    stats = {
+        'rank': rank,
+        'points': user_entry['total_points'] if user_entry else 0,
+        'bets': user_entry['total_bets'] if user_entry else 0,
+        'exact_scores': user_entry['exact_scores'] if user_entry else 0,
+    }
+    return render_template('dashboard.html',
+        matches=matches, leaderboard=leaderboard,
+        stats=stats, season=season)

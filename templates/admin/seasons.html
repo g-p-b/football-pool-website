@@ -1,0 +1,87 @@
+{% extends "admin/base.html" %}
+{% block title %}Seasons — Football Pool Admin{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1><i class="fa fa-calendar"></i> Seasons</h1>
+    <button class="btn btn-primary" onclick="openCreateSeasonModal()">
+        <i class="fa fa-plus"></i> New Season
+    </button>
+</div>
+
+{% if success %}<div class="alert alert-success"><i class="fa fa-check-circle"></i> {{ success }}</div>{% endif %}
+{% if error %}<div class="alert alert-error"><i class="fa fa-circle-exclamation"></i> {{ error }}</div>{% endif %}
+
+<div class="card">
+    <div class="card-body p0">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Season Name</th>
+                    <th>Status</th>
+                    <th>Matches</th>
+                    <th>Total Bets</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in seasons %}
+                <tr>
+                    <td><strong>{{ s['name'] }}</strong></td>
+                    <td>
+                        {% if s['is_active'] %}
+                        <span class="status-badge active"><i class="fa fa-circle-check"></i> Active</span>
+                        {% else %}
+                        <span class="status-badge inactive">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ s['match_count'] }}</td>
+                    <td>{{ s['bet_count'] }}</td>
+                    <td class="text-dim">{{ s['created_at'][:10] }}</td>
+                    <td class="action-cell">
+                        {% if not s['is_active'] %}
+                        <form method="POST" action="/admin/seasons/{{ s['id'] }}/activate" style="display:inline">
+                            <button type="submit" class="btn btn-success btn-xs">
+                                <i class="fa fa-circle-check"></i> Activate
+                            </button>
+                        </form>
+                        {% endif %}
+                        {% if not s['is_active'] and s['match_count'] == 0 %}
+                        <form method="POST" action="/admin/seasons/{{ s['id'] }}/delete" style="display:inline"
+                            onsubmit="return confirm('Delete season {{ s['name'] }}?')">
+                            <button type="submit" class="btn btn-danger btn-xs"><i class="fa fa-trash"></i></button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="empty-state">No seasons yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function openCreateSeasonModal() {
+    setModal('Create New Season', `
+        <form method="POST" action="/admin/seasons/create">
+            <div class="form-group">
+                <label>Season Name</label>
+                <input type="text" name="name" required placeholder="e.g. Season 2024/25" autofocus>
+            </div>
+            <p class="text-dim" style="font-size:0.85rem">
+                <i class="fa fa-circle-info"></i>
+                After creating, go to the season and activate it to make it the current season.
+            </p>
+            <div class="form-actions">
+                <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="fa fa-plus"></i> Create Season</button>
+            </div>
+        </form>
+    `);
+}
+</script>
+{% endblock %}

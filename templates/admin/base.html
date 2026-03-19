@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin — Football Pool{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="admin-body">
+<nav class="navbar admin-navbar">
+    <div class="nav-brand">
+        <span>⚽</span> Football Pool
+        <span class="admin-badge"><i class="fa fa-shield-halved"></i> Admin</span>
+    </div>
+    <div class="nav-right">
+        <span class="nav-user"><i class="fa fa-user-shield"></i> {{ session.display_name }}</span>
+        <a href="/logout" class="btn btn-ghost btn-sm"><i class="fa fa-right-from-bracket"></i> Logout</a>
+    </div>
+</nav>
+
+<div class="admin-tabs">
+    <a href="/admin" class="tab {% if request.path == '/admin' %}active{% endif %}">
+        <i class="fa fa-gauge"></i> Dashboard
+    </a>
+    <a href="/admin/users" class="tab {% if '/admin/users' in request.path %}active{% endif %}">
+        <i class="fa fa-users"></i> Users
+    </a>
+    <a href="/admin/matches" class="tab {% if '/admin/matches' in request.path %}active{% endif %}">
+        <i class="fa fa-futbol"></i> Matches
+    </a>
+    <a href="/admin/seasons" class="tab {% if '/admin/seasons' in request.path %}active{% endif %}">
+        <i class="fa fa-calendar"></i> Seasons
+    </a>
+</div>
+
+<div class="admin-container">
+    {% block content %}{% endblock %}
+</div>
+
+<div id="toast" class="toast"></div>
+
+<!-- Modal Container -->
+<div id="modal-overlay" class="modal-overlay" onclick="closeModal()"></div>
+<div id="modal" class="modal">
+    <div class="modal-header">
+        <h3 id="modal-title">Modal</h3>
+        <button class="modal-close" onclick="closeModal()"><i class="fa fa-xmark"></i></button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+</div>
+
+<script src="/static/js/main.js"></script>
+<script src="/static/js/admin.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

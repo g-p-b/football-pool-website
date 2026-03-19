@@ -1,0 +1,215 @@
+{% extends "admin/base.html" %}
+{% block title %}Matches — Football Pool Admin{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1><i class="fa fa-futbol"></i> Matches</h1>
+    <div class="btn-group">
+        <button class="btn btn-ghost btn-sm" onclick="openUploadModal()">
+            <i class="fa fa-file-csv"></i> Import CSV
+        </button>
+        <button class="btn btn-primary" onclick="openCreateMatchModal()">
+            <i class="fa fa-plus"></i> Add Match
+        </button>
+    </div>
+</div>
+
+{% if success %}<div class="alert alert-success"><i class="fa fa-check-circle"></i> {{ success }}</div>{% endif %}
+{% if error %}<div class="alert alert-error"><i class="fa fa-circle-exclamation"></i> {{ error }}</div>{% endif %}
+
+{% if active_season %}
+<div class="info-bar">
+    <i class="fa fa-circle-info"></i>
+    Active season: <strong>{{ active_season['name'] }}</strong> — new matches default to this season.
+</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-body p0">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Round</th>
+                    <th>Home</th>
+                    <th>Away</th>
+                    <th>Date</th>
+                    <th>Season</th>
+                    <th>Status</th>
+                    <th>Result</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in matches %}
+                <tr>
+                    <td><span class="round-badge">{{ m['round'] or '—' }}</span></td>
+                    <td><strong>{{ m['home_team'] }}</strong></td>
+                    <td><strong>{{ m['away_team'] }}</strong></td>
+                    <td class="text-dim">{{ m['match_date'] | fmt_date }}</td>
+                    <td class="text-dim">{{ m['season_name'] }}</td>
+                    <td>
+                        {% if m['status'] == 'finished' %}
+                        <span class="status-badge finished"><i class="fa fa-flag-checkered"></i> Done</span>
+                        {% else %}
+                        <span class="status-badge upcoming"><i class="fa fa-clock"></i> Upcoming</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if m['status'] == 'finished' %}
+                        <strong class="result-score">{{ m['home_score'] }} – {{ m['away_score'] }}</strong>
+                        {% else %}—{% endif %}
+                    </td>
+                    <td class="action-cell">
+                        {% if m['status'] != 'finished' %}
+                        <button class="btn btn-success btn-xs" onclick="openResultModal({{ m | tojson }})">
+                            <i class="fa fa-flag-checkered"></i> Set Result
+                        </button>
+                        {% else %}
+                        <button class="btn btn-ghost btn-xs" onclick="openResultModal({{ m | tojson }})">
+                            <i class="fa fa-pen"></i> Edit Result
+                        </button>
+                        {% endif %}
+                        <button class="btn btn-ghost btn-xs" onclick="openEditMatchModal({{ m | tojson }}, {{ seasons | tojson }})">
+                            <i class="fa fa-pen-to-square"></i>
+                        </button>
+                        <form method="POST" action="/admin/matches/{{ m['id'] }}/delete" style="display:inline"
+                            onsubmit="return confirm('Delete this match? All bets on it will be removed.')">
+                            <button type="submit" class="btn btn-danger btn-xs"><i class="fa fa-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="8" class="empty-state">No matches yet. Add one or import from CSV.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const activeSeason = {{ active_season | tojson if active_season else 'null' }};
+
+function openCreateMatchModal() {
+    const seasonOpts = {{ seasons | tojson }}.map(s =>
+        `<option value="${s.id}" ${activeSeason && s.id === activeSeason.id ? 'selected' : ''}>${escHtml(s.name)}</option>`
+    ).join('');
+    setModal('Add New Match', `
+        <form method="POST" action="/admin/matches/create">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Home Team</label>
+                    <input type="text" name="home_team" required placeholder="e.g. Manchester City" autofocus>
+                </div>
+                <div class="form-group">
+                    <label>Away Team</label>
+                    <input type="text" name="away_team" required placeholder="e.g. Arsenal">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Match Date & Time</label>
+                    <input type="datetime-local" name="match_date" required>
+                </div>
+                <div class="form-group">
+                    <label>Round / Matchday</label>
+                    <input type="text" name="round" placeholder="e.g. Matchday 1">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Season</label>
+                <select name="season_id" required>${seasonOpts}</select>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="fa fa-plus"></i> Add Match</button>
+            </div>
+        </form>
+    `);
+}
+
+function openEditMatchModal(m, seasons) {
+    const seasonOpts = seasons.map(s =>
+        `<option value="${s.id}" ${s.id === m.season_id ? 'selected' : ''}>${escHtml(s.name)}</option>`
+    ).join('');
+    const dtVal = m.match_date ? m.match_date.substring(0, 16).replace(' ', 'T') : '';
+    setModal('Edit Match', `
+        <form method="POST" action="/admin/matches/${m.id}/edit">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Home Team</label>
+                    <input type="text" name="home_team" required value="${escHtml(m.home_team)}">
+                </div>
+                <div class="form-group">
+                    <label>Away Team</label>
+                    <input type="text" name="away_team" required value="${escHtml(m.away_team)}">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Date & Time</label>
+                    <input type="datetime-local" name="match_date" required value="${dtVal}">
+                </div>
+                <div class="form-group">
+                    <label>Round</label>
+                    <input type="text" name="round" value="${escHtml(m.round || '')}">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Season</label>
+                <select name="season_id">${seasonOpts}</select>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="fa fa-floppy-disk"></i> Save</button>
+            </div>
+        </form>
+    `);
+}
+
+function openResultModal(m) {
+    setModal(`Set Result: ${escHtml(m.home_team)} vs ${escHtml(m.away_team)}`, `
+        <form method="POST" action="/admin/matches/${m.id}/result">
+            <div class="result-input-group">
+                <div class="result-team">${escHtml(m.home_team)}</div>
+                <input type="number" name="home_score" min="0" max="20" required
+                    value="${m.home_score !== null ? m.home_score : ''}"
+                    placeholder="0" class="result-score-input" autofocus>
+                <span class="result-dash">–</span>
+                <input type="number" name="away_score" min="0" max="20" required
+                    value="${m.away_score !== null ? m.away_score : ''}"
+                    placeholder="0" class="result-score-input">
+                <div class="result-team">${escHtml(m.away_team)}</div>
+            </div>
+            <p class="result-note"><i class="fa fa-circle-info"></i> Setting a result will calculate points for all bets on this match.</p>
+            <div class="form-actions">
+                <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn btn-success"><i class="fa fa-flag-checkered"></i> Confirm Result</button>
+            </div>
+        </form>
+    `);
+}
+
+function openUploadModal() {
+    setModal('Import Matches from CSV', `
+        <form method="POST" action="/admin/matches/upload" enctype="multipart/form-data">
+            <div class="upload-info">
+                <p><strong>CSV Format:</strong></p>
+                <pre class="csv-example">Round,Home Team,Away Team,Date
+Matchday 1,Manchester City,Arsenal,2024-08-17T15:00
+Matchday 1,Chelsea,Liverpool,2024-08-17T17:30</pre>
+                <p class="text-dim">Matches will be added to the active season. Date format: YYYY-MM-DDTHH:MM</p>
+            </div>
+            <div class="form-group">
+                <label>CSV File</label>
+                <input type="file" name="csvfile" accept=".csv" required>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="fa fa-file-import"></i> Import</button>
+            </div>
+        </form>
+    `);
+}
+</script>
+{% endblock %}

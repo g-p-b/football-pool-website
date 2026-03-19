@@ -1,0 +1,95 @@
+{% extends "admin/base.html" %}
+{% block title %}Admin Dashboard — Football Pool{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1><i class="fa fa-gauge"></i> Dashboard</h1>
+    {% if active_season %}
+    <span class="season-badge active">
+        <i class="fa fa-circle-check"></i> Active: {{ active_season['name'] }}
+    </span>
+    {% else %}
+    <span class="season-badge inactive"><i class="fa fa-circle-exclamation"></i> No active season</span>
+    {% endif %}
+</div>
+
+<div class="admin-stats">
+    <div class="admin-stat-card">
+        <div class="astat-icon blue"><i class="fa fa-users"></i></div>
+        <div class="astat-body">
+            <div class="astat-value">{{ stats.users }}</div>
+            <div class="astat-label">Players</div>
+        </div>
+        <a href="/admin/users" class="astat-link">Manage <i class="fa fa-arrow-right"></i></a>
+    </div>
+    <div class="admin-stat-card">
+        <div class="astat-icon green"><i class="fa fa-futbol"></i></div>
+        <div class="astat-body">
+            <div class="astat-value">{{ stats.matches }}</div>
+            <div class="astat-label">Matches</div>
+        </div>
+        <a href="/admin/matches" class="astat-link">Manage <i class="fa fa-arrow-right"></i></a>
+    </div>
+    <div class="admin-stat-card">
+        <div class="astat-icon gold"><i class="fa fa-ticket"></i></div>
+        <div class="astat-body">
+            <div class="astat-value">{{ stats.bets }}</div>
+            <div class="astat-label">Total Bets</div>
+        </div>
+    </div>
+    <div class="admin-stat-card">
+        <div class="astat-icon purple"><i class="fa fa-calendar"></i></div>
+        <div class="astat-body">
+            <div class="astat-value">{{ stats.seasons }}</div>
+            <div class="astat-label">Seasons</div>
+        </div>
+        <a href="/admin/seasons" class="astat-link">Manage <i class="fa fa-arrow-right"></i></a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2><i class="fa fa-clock-rotate-left"></i> Recent Matches</h2>
+        <a href="/admin/matches" class="btn btn-ghost btn-sm">View all</a>
+    </div>
+    <div class="card-body p0">
+        {% if recent_matches %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Round</th>
+                    <th>Match</th>
+                    <th>Date</th>
+                    <th>Season</th>
+                    <th>Status</th>
+                    <th>Result</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in recent_matches %}
+                <tr>
+                    <td><span class="round-badge">{{ m['round'] or '—' }}</span></td>
+                    <td><strong>{{ m['home_team'] }}</strong> vs <strong>{{ m['away_team'] }}</strong></td>
+                    <td>{{ m['match_date'] | fmt_date }}</td>
+                    <td>{{ m['season_name'] }}</td>
+                    <td>
+                        {% if m['status'] == 'finished' %}
+                        <span class="status-badge finished">Finished</span>
+                        {% else %}
+                        <span class="status-badge upcoming">Upcoming</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if m['status'] == 'finished' %}
+                        <strong>{{ m['home_score'] }} – {{ m['away_score'] }}</strong>
+                        {% else %}—{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state p16">No matches yet. <a href="/admin/matches">Add matches →</a></div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

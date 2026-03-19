@@ -1,0 +1,126 @@
+{% extends "admin/base.html" %}
+{% block title %}Users — Football Pool Admin{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1><i class="fa fa-users"></i> Users</h1>
+    <button class="btn btn-primary" onclick="openCreateUserModal()">
+        <i class="fa fa-plus"></i> Add User
+    </button>
+</div>
+
+{% if success %}<div class="alert alert-success"><i class="fa fa-check-circle"></i> {{ success }}</div>{% endif %}
+{% if error %}<div class="alert alert-error"><i class="fa fa-circle-exclamation"></i> {{ error }}</div>{% endif %}
+
+<div class="card">
+    <div class="card-body p0">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Username</th>
+                    <th>Display Name</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td class="text-dim">{{ u['id'] }}</td>
+                    <td><code class="username">{{ u['username'] }}</code></td>
+                    <td>{{ u['display_name'] }}</td>
+                    <td>
+                        {% if u['is_admin'] %}
+                        <span class="role-badge admin"><i class="fa fa-shield-halved"></i> Admin</span>
+                        {% else %}
+                        <span class="role-badge player"><i class="fa fa-user"></i> Player</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if u['is_active'] %}
+                        <span class="status-badge active"><i class="fa fa-circle"></i> Active</span>
+                        {% else %}
+                        <span class="status-badge inactive"><i class="fa fa-circle"></i> Disabled</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-dim">{{ u['created_at'][:10] }}</td>
+                    <td class="action-cell">
+                        <button class="btn btn-ghost btn-xs" onclick="openEditUserModal({{ u | tojson }})">
+                            <i class="fa fa-pen"></i> Edit
+                        </button>
+                        <form method="POST" action="/admin/users/{{ u['id'] }}/delete" style="display:inline"
+                            onsubmit="return confirm('Delete user {{ u['username'] }}? All their bets will be removed.')">
+                            <button type="submit" class="btn btn-danger btn-xs">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7" class="empty-state">No users yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function openCreateUserModal() {
+    setModal('Create New User', `
+        <form method="POST" action="/admin/users/create">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" name="username" required placeholder="e.g. john_doe" autofocus>
+            </div>
+            <div class="form-group">
+                <label>Display Name</label>
+                <input type="text" name="display_name" required placeholder="e.g. John Doe">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" name="password" required placeholder="Set initial password">
+            </div>
+            <div class="form-check">
+                <input type="checkbox" name="is_admin" id="ca_admin">
+                <label for="ca_admin">Grant admin access</label>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="fa fa-plus"></i> Create User</button>
+            </div>
+        </form>
+    `);
+}
+
+function openEditUserModal(u) {
+    setModal('Edit User: ' + u.username, `
+        <form method="POST" action="/admin/users/${u.id}/edit">
+            <div class="form-group">
+                <label>Display Name</label>
+                <input type="text" name="display_name" required value="${escHtml(u.display_name)}">
+            </div>
+            <div class="form-group">
+                <label>New Password <span class="text-dim">(leave blank to keep current)</span></label>
+                <input type="password" name="password" placeholder="Enter new password">
+            </div>
+            <div class="form-check">
+                <input type="checkbox" name="is_admin" id="ea_admin" ${u.is_admin ? 'checked' : ''}>
+                <label for="ea_admin">Admin access</label>
+            </div>
+            <div class="form-check">
+                <input type="checkbox" name="is_active" id="ea_active" ${u.is_active ? 'checked' : ''}>
+                <label for="ea_active">Account active</label>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="fa fa-floppy-disk"></i> Save Changes</button>
+            </div>
+        </form>
+    `);
+}
+</script>
+{% endblock %}

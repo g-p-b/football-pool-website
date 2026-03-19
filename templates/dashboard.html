@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Football Pool{% endblock %}
+{% block body %}
+<nav class="navbar">
+    <div class="nav-brand">
+        <span>⚽</span> Football Pool
+        {% if season %}<span class="season-badge">{{ season['name'] }}</span>{% endif %}
+    </div>
+    <div class="nav-right">
+        <span class="nav-user"><i class="fa fa-user-circle"></i> {{ session.display_name }}</span>
+        <a href="/logout" class="btn btn-ghost btn-sm"><i class="fa fa-right-from-bracket"></i> Logout</a>
+    </div>
+</nav>
+
+<div class="page-container">
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+        <div class="stat-card">
+            <div class="stat-icon rank"><i class="fa fa-trophy"></i></div>
+            <div class="stat-body">
+                <div class="stat-value">{% if stats.rank == '-' %}—{% else %}#{{ stats.rank }}{% endif %}</div>
+                <div class="stat-label">Your Rank</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon points"><i class="fa fa-star"></i></div>
+            <div class="stat-body">
+                <div class="stat-value">{{ stats.points }}</div>
+                <div class="stat-label">Total Points</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon exact"><i class="fa fa-bullseye"></i></div>
+            <div class="stat-body">
+                <div class="stat-value">{{ stats.exact_scores }}</div>
+                <div class="stat-label">Exact Scores</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon bets"><i class="fa fa-check-circle"></i></div>
+            <div class="stat-body">
+                <div class="stat-value">{{ stats.bets }}</div>
+                <div class="stat-label">Bets Placed</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <!-- Leaderboard -->
+        <aside class="sidebar">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa fa-ranking-star"></i> Standings</h2>
+                </div>
+                <div class="card-body p0">
+                    {% if leaderboard %}
+                    <table class="leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Player</th>
+                                <th><abbr title="Total Points">Pts</abbr></th>
+                                <th><abbr title="Exact Scores">🎯</abbr></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in leaderboard %}
+                            <tr class="{% if entry['id'] == session.user_id %}highlight-row{% endif %}
+                                       {% if loop.index == 1 %}rank-gold{% elif loop.index == 2 %}rank-silver{% elif loop.index == 3 %}rank-bronze{% endif %}">
+                                <td class="rank-cell">
+                                    {% if loop.index == 1 %}<i class="fa fa-medal gold"></i>
+                                    {% elif loop.index == 2 %}<i class="fa fa-medal silver"></i>
+                                    {% elif loop.index == 3 %}<i class="fa fa-medal bronze"></i>
+                                    {% else %}{{ loop.index }}{% endif %}
+                                </td>
+                                <td class="name-cell">
+                                    {{ entry['display_name'] }}
+                                    {% if entry['id'] == session.user_id %}<span class="you-badge">YOU</span>{% endif %}
+                                </td>
+                                <td class="pts-cell">{{ entry['total_points'] }}</td>
+                                <td class="exact-cell">{{ entry['exact_scores'] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="empty-state p16">No players yet.</div>
+                    {% endif %}
+                </div>
+                <div class="card-footer points-legend">
+                    <span class="legend-item"><span class="badge badge-exact">3 pts</span> Exact score</span>
+                    <span class="legend-item"><span class="badge badge-correct">1 pt</span> Correct result</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Matches -->
+        <main class="main-content">
+            {% if not season %}
+            <div class="card empty-card">
+                <div class="empty-state">
+                    <i class="fa fa-calendar-xmark"></i>
+                    <p>No active season. Ask the admin to set one up.</p>
+                </div>
+            </div>
+            {% else %}
+
+            {% set upcoming = matches | selectattr('status', 'equalto', 'upcoming') | list %}
+            {% set finished = matches | selectattr('status', 'equalto', 'finished') | list %}
+
+            <!-- Upcoming Matches -->
+            {% if upcoming %}
+            <div class="section-header">
+                <h2><i class="fa fa-calendar-days"></i> Place Your Bets</h2>
+                <span class="section-sub">{{ upcoming | length }} upcoming match{% if upcoming|length != 1 %}es{% endif %}</span>
+            </div>
+            <div class="matches-grid" id="upcoming-matches">
+                {% for m in upcoming %}
+                {% set locked = m['match_date'] | is_locked %}
+                <div class="match-card upcoming {% if locked %}locked{% endif %}" data-match-id="{{ m['id'] }}">
+                    <div class="match-meta">
+                        {% if m['round'] %}<span class="round-badge">{{ m['round'] }}</span>{% endif %}
+                        <span class="match-date">
+                            <i class="fa fa-clock"></i> {{ m['match_date'] | fmt_date }}
+                        </span>
+                        {% if locked %}<span class="locked-badge"><i class="fa fa-lock"></i> Locked</span>{% endif %}
+                    </div>
+                    <div class="match-teams">
+                        <div class="team home">{{ m['home_team'] }}</div>
+                        <div class="vs">VS</div>
+                        <div class="team away">{{ m['away_team'] }}</div>
+                    </div>
+                    <div class="bet-section">
+                        {% if locked %}
+                            {% if m['bet_home'] is not none %}
+                            <div class="bet-display locked-bet">
+                                <span>Your bet: <strong>{{ m['bet_home'] }} – {{ m['bet_away'] }}</strong></span>
+                                <span class="bet-status pending"><i class="fa fa-hourglass-half"></i> Waiting</span>
+                            </div>
+                            {% else %}
+                            <div class="no-bet">
+                                <i class="fa fa-ban"></i> No bet placed
+                            </div>
+                            {% endif %}
+                        {% else %}
+                        <div class="bet-input-row">
+                            <div class="score-input-group">
+                                <input type="number" class="score-input home-input"
+                                    min="0" max="20"
+                                    value="{{ m['bet_home'] if m['bet_home'] is not none else '' }}"
+                                    placeholder="0"
+                                    data-match-id="{{ m['id'] }}" data-side="home">
+                                <span class="score-dash">–</span>
+                                <input type="number" class="score-input away-input"
+                                    min="0" max="20"
+                                    value="{{ m['bet_away'] if m['bet_away'] is not none else '' }}"
+                                    placeholder="0"
+                                    data-match-id="{{ m['id'] }}" data-side="away">
+                            </div>
+                            <button class="btn btn-save" data-match-id="{{ m['id'] }}">
+                                <i class="fa fa-floppy-disk"></i>
+                                <span>{{ 'Update' if m['bet_home'] is not none else 'Save Bet' }}</span>
+                            </button>
+                        </div>
+                        <div class="bet-status-msg" id="status-{{ m['id'] }}">
+                            {% if m['bet_home'] is not none %}
+                            <span class="saved-indicator"><i class="fa fa-check"></i> Bet saved</span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Finished Matches -->
+            {% if finished %}
+            <div class="section-header" style="margin-top:2rem">
+                <h2><i class="fa fa-flag-checkered"></i> Results</h2>
+                <span class="section-sub">{{ finished | length }} finished match{% if finished|length != 1 %}es{% endif %}</span>
+            </div>
+            <div class="matches-grid">
+                {% for m in finished | sort(attribute='match_date', reverse=True) %}
+                <div class="match-card finished">
+                    <div class="match-meta">
+                        {% if m['round'] %}<span class="round-badge">{{ m['round'] }}</span>{% endif %}
+                        <span class="match-date"><i class="fa fa-calendar-check"></i> {{ m['match_date'] | fmt_date }}</span>
+                        <span class="finished-badge"><i class="fa fa-flag-checkered"></i> FT</span>
+                    </div>
+                    <div class="match-teams result-teams">
+                        <div class="team home">{{ m['home_team'] }}</div>
+                        <div class="final-score">{{ m['home_score'] }} – {{ m['away_score'] }}</div>
+                        <div class="team away">{{ m['away_team'] }}</div>
+                    </div>
+                    <div class="bet-result">
+                        {% if m['bet_home'] is not none %}
+                            {% set pts = m['bet_points'] %}
+                            <div class="my-bet {% if pts == 3 %}bet-exact{% elif pts == 1 %}bet-correct{% else %}bet-wrong{% endif %}">
+                                <span class="bet-label">Your bet:</span>
+                                <span class="bet-score">{{ m['bet_home'] }} – {{ m['bet_away'] }}</span>
+                                <span class="bet-pts">
+                                    {% if pts == 3 %}
+                                        <span class="pts-badge exact">+3 pts <i class="fa fa-bullseye"></i></span>
+                                    {% elif pts == 1 %}
+                                        <span class="pts-badge correct">+1 pt <i class="fa fa-check"></i></span>
+                                    {% else %}
+                                        <span class="pts-badge wrong">0 pts <i class="fa fa-xmark"></i></span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        {% else %}
+                            <div class="my-bet bet-none">
+                                <i class="fa fa-ban"></i> No bet placed
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if not upcoming and not finished %}
+            <div class="card empty-card">
+                <div class="empty-state">
+                    <i class="fa fa-futbol fa-3x"></i>
+                    <p>No matches in this season yet.<br>Check back soon!</p>
+                </div>
+            </div>
+            {% endif %}
+
+            {% endif %}
+        </main>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/dashboard.js"></script>
+{% endblock %}
