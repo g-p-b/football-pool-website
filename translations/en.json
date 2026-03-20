@@ -64,6 +64,13 @@
   "season_active_label": "(Active)",
   "no_players": "No players yet.",
   "no_season_rankings": "No active season.",
+  "you_badge": "YOU",
+  "scoring_label": "Scoring:",
+  "col_wins_title": "Matches won (any points scored)",
+  "col_exact_title": "Exact score predicted",
+  "col_result_title": "Correct result (win/draw/loss)",
+  "col_wrong_title": "Wrong prediction",
+  "col_win_rate_title": "Win rate on resolved matches",
 
   "admin_dashboard_title": "Dashboard",
   "admin_active": "Active",

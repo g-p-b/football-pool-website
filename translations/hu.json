@@ -64,6 +64,13 @@
   "season_active_label": "(Aktív)",
   "no_players": "Még nincsenek játékosok.",
   "no_season_rankings": "Nincs aktív szezon.",
+  "you_badge": "TE",
+  "scoring_label": "Pontozás:",
+  "col_wins_title": "Nyert mérkőzések (bármilyen pont)",
+  "col_exact_title": "Pontos eredménytipp",
+  "col_result_title": "Helyes eredmény (győzelem/döntetlen/vereség)",
+  "col_wrong_title": "Téves tipp",
+  "col_win_rate_title": "Sikerráta a lezárt mérkőzéseken",
 
   "admin_dashboard_title": "Irányítópult",
   "admin_active": "Aktív",

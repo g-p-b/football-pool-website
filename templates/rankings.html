@@ -1,5 +1,5 @@
 {% extends "admin/base.html" if session.is_admin else "base.html" %}
-{% block title %}Rankings — Football Pool{% endblock %}
+{% block title %}{{ t('rankings_title') }} — Football Pool{% endblock %}
 {% block content %}
 {% if not session.is_admin %}
 <nav class="navbar">
@@ -8,12 +8,16 @@
         {% if selected_season %}<span class="season-badge">{{ selected_season['name'] }}</span>{% endif %}
     </div>
     <div class="nav-links">
-        <a href="/dashboard" class="nav-link"><i class="fa fa-house"></i> Dashboard</a>
-        <a href="/rankings" class="nav-link active"><i class="fa fa-ranking-star"></i> Rankings</a>
+        <a href="/dashboard" class="nav-link"><i class="fa fa-house"></i> {{ t('nav_dashboard') }}</a>
+        <a href="/rankings" class="nav-link active"><i class="fa fa-ranking-star"></i> {{ t('nav_rankings') }}</a>
     </div>
     <div class="nav-right">
+        <div class="lang-switcher">
+            <a href="/set-language/en" class="lang-btn {% if current_lang == 'en' %}active{% endif %}">EN</a>
+            <a href="/set-language/hu" class="lang-btn {% if current_lang == 'hu' %}active{% endif %}">HU</a>
+        </div>
         <span class="nav-user"><i class="fa fa-user-circle"></i> {{ session.display_name }}</span>
-        <a href="/logout" class="btn btn-ghost btn-sm"><i class="fa fa-right-from-bracket"></i> Logout</a>
+        <a href="/logout" class="btn btn-ghost btn-sm"><i class="fa fa-right-from-bracket"></i> {{ t('nav_logout') }}</a>
     </div>
 </nav>
 {% endif %}
@@ -21,7 +25,7 @@
 <div class="{% if session.is_admin %}admin-container{% else %}page-container{% endif %}">
     <div class="page-header">
         <h1 style="font-size:1.5rem;font-weight:800;display:flex;align-items:center;gap:10px;">
-            <i class="fa fa-ranking-star" style="color:var(--green)"></i> Rankings
+            <i class="fa fa-ranking-star" style="color:var(--green)"></i> {{ t('rankings_title') }}
         </h1>
         <!-- Season selector -->
         {% if seasons | length > 1 %}
@@ -30,7 +34,7 @@
                 style="background:var(--bg4);border:1px solid var(--border2);color:var(--text1);padding:6px 12px;border-radius:var(--r-sm);font-size:0.875rem;cursor:pointer;">
                 {% for s in seasons %}
                 <option value="{{ s['id'] }}" {% if selected_season and s['id'] == selected_season['id'] %}selected{% endif %}>
-                    {{ s['name'] }}{% if s['is_active'] %} (Active){% endif %}
+                    {{ s['name'] }}{% if s['is_active'] %} {{ t('season_active_label') }}{% endif %}
                 </option>
                 {% endfor %}
             </select>
@@ -40,11 +44,11 @@
 
     {% if not selected_season %}
     <div class="card">
-        <div class="empty-state"><i class="fa fa-calendar-xmark"></i><p>No active season.</p></div>
+        <div class="empty-state"><i class="fa fa-calendar-xmark"></i><p>{{ t('no_season_rankings') }}</p></div>
     </div>
     {% elif not leaderboard %}
     <div class="card">
-        <div class="empty-state"><i class="fa fa-users"></i><p>No players yet.</p></div>
+        <div class="empty-state"><i class="fa fa-users"></i><p>{{ t('no_players') }}</p></div>
     </div>
     {% else %}
 
@@ -58,7 +62,7 @@
         <div class="podium-place second">
             <div class="podium-avatar">{{ rank2[0]['display_name'][0] | upper }}</div>
             <div class="podium-name">{{ rank2[0]['display_name'] }}</div>
-            <div class="podium-pts">{{ rank2[0]['total_points'] }} pts</div>
+            <div class="podium-pts">{{ rank2[0]['total_points'] }} {{ t('pts_suffix') }}</div>
             <div class="podium-block p2"><span class="podium-rank">2</span></div>
         </div>
         {% endif %}
@@ -66,14 +70,14 @@
             <div class="podium-crown">👑</div>
             <div class="podium-avatar gold">{{ rank1[0]['display_name'][0] | upper }}</div>
             <div class="podium-name">{{ rank1[0]['display_name'] }}</div>
-            <div class="podium-pts gold-text">{{ rank1[0]['total_points'] }} pts</div>
+            <div class="podium-pts gold-text">{{ rank1[0]['total_points'] }} {{ t('pts_suffix') }}</div>
             <div class="podium-block p1"><span class="podium-rank">1</span></div>
         </div>
         {% if rank3 | length == 1 %}
         <div class="podium-place third">
             <div class="podium-avatar bronze">{{ rank3[0]['display_name'][0] | upper }}</div>
             <div class="podium-name">{{ rank3[0]['display_name'] }}</div>
-            <div class="podium-pts">{{ rank3[0]['total_points'] }} pts</div>
+            <div class="podium-pts">{{ rank3[0]['total_points'] }} {{ t('pts_suffix') }}</div>
             <div class="podium-block p3"><span class="podium-rank">3</span></div>
         </div>
         {% endif %}
@@ -83,10 +87,10 @@
     <!-- Full Rankings Table -->
     <div class="card">
         <div class="card-header">
-            <h2><i class="fa fa-table-list"></i> Full Standings</h2>
+            <h2><i class="fa fa-table-list"></i> {{ t('rankings_full') }}</h2>
             <span class="text-dim" style="font-size:0.8rem">
-                Scoring: <strong style="color:var(--green)">3 pts</strong> exact score &nbsp;·&nbsp;
-                <strong style="color:var(--gold)">1 pt</strong> correct result
+                {{ t('scoring_label') }} <strong style="color:var(--green)">3 {{ t('pts_suffix') }}</strong> {{ t('scoring_exact') }} &nbsp;·&nbsp;
+                <strong style="color:var(--gold)">1 {{ t('pts_suffix') }}</strong> {{ t('scoring_correct') }}
             </span>
         </div>
         <div class="card-body p0">
@@ -94,14 +98,14 @@
                 <thead>
                     <tr>
                         <th style="width:48px">#</th>
-                        <th>Player</th>
-                        <th>Points</th>
-                        <th><abbr title="Matches won (any points scored)">Wins</abbr></th>
-                        <th><abbr title="Exact score predicted">🎯 Exact</abbr></th>
-                        <th><abbr title="Correct result (win/draw/loss)">✅ Result</abbr></th>
-                        <th><abbr title="Wrong prediction">❌ Wrong</abbr></th>
-                        <th><abbr title="Win rate on resolved matches">Win Rate</abbr></th>
-                        <th>Progress</th>
+                        <th>{{ t('col_player') }}</th>
+                        <th>{{ t('col_points') }}</th>
+                        <th><abbr title="{{ t('col_wins_title') }}">{{ t('col_wins') }}</abbr></th>
+                        <th><abbr title="{{ t('col_exact_title') }}">🎯 {{ t('col_exact') }}</abbr></th>
+                        <th><abbr title="{{ t('col_result_title') }}">✅ {{ t('col_result') }}</abbr></th>
+                        <th><abbr title="{{ t('col_wrong_title') }}">❌ {{ t('col_wrong') }}</abbr></th>
+                        <th><abbr title="{{ t('col_win_rate_title') }}">{{ t('col_win_rate') }}</abbr></th>
+                        <th>{{ t('col_progress') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -120,7 +124,7 @@
                         </td>
                         <td>
                             <span class="player-name">{{ entry['display_name'] }}</span>
-                            {% if is_me %}<span class="you-badge">YOU</span>{% endif %}
+                            {% if is_me %}<span class="you-badge">{{ t('you_badge') }}</span>{% endif %}
                         </td>
                         <td><span class="pts-big">{{ entry['total_points'] }}</span></td>
                         <td><span class="wins-count">{{ entry['wins'] }}</span></td>
