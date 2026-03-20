@@ -191,6 +191,7 @@
   "err_cannot_delete_admin": "No se puede eliminar el último administrador",
   "err_season_has_matches": "No se puede eliminar una temporada con partidos",
   "err_season_name_required": "El nombre de temporada es obligatorio",
+  "err_password_too_short": "La contraseña debe tener al menos 4 caracteres",
 
   "js_bet_saved": "¡Apuesta guardada! \u26bd",
   "js_bet_error": "No se pudo guardar la apuesta",

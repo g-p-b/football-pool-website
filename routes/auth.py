@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
 from werkzeug.security import check_password_hash
 from database import get_db
+from extensions import limiter
 from functools import wraps
 
 auth_bp = Blueprint('auth', __name__)
@@ -32,6 +33,7 @@ def index():
 
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
+@limiter.limit("10 per minute", methods=["POST"])
 def login():
     if 'user_id' in session:
         return redirect(url_for('auth.index'))
@@ -44,6 +46,7 @@ def login():
                 'SELECT * FROM users WHERE username = ? AND is_active = 1', (username,)
             ).fetchone()
         if user and check_password_hash(user['password'], password):
+            session.clear()  # Prevent session fixation
             session['user_id'] = user['id']
             session['username'] = user['username']
             session['display_name'] = user['display_name']

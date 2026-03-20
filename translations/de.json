@@ -191,6 +191,7 @@
   "err_cannot_delete_admin": "Letzten Administrator kann nicht gelöscht werden",
   "err_season_has_matches": "Saison mit Spielen kann nicht gelöscht werden",
   "err_season_name_required": "Saisonname ist erforderlich",
+  "err_password_too_short": "Das Passwort muss mindestens 4 Zeichen lang sein",
 
   "js_bet_saved": "Tipp gespeichert! \u26bd",
   "js_bet_error": "Tipp konnte nicht gespeichert werden",

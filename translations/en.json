@@ -191,6 +191,7 @@
   "err_cannot_delete_admin": "Cannot delete last admin",
   "err_season_has_matches": "Cannot delete season with matches",
   "err_season_name_required": "Season name required",
+  "err_password_too_short": "Password must be at least 4 characters",
 
   "js_bet_saved": "Bet saved! \u26bd",
   "js_bet_error": "Could not save bet",

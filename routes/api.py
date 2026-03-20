@@ -17,8 +17,8 @@ def place_bet():
     except (TypeError, ValueError):
         return jsonify({'ok': False, 'error': 'Invalid score values'})
 
-    if home_score < 0 or away_score < 0:
-        return jsonify({'ok': False, 'error': 'Scores cannot be negative'})
+    if not (0 <= home_score <= 99 and 0 <= away_score <= 99):
+        return jsonify({'ok': False, 'error': 'Score out of range (0–99)'})
 
     with get_db() as conn:
         match = conn.execute('SELECT * FROM matches WHERE id=?', (match_id,)).fetchone()

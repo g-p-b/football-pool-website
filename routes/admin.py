@@ -45,12 +45,14 @@ def users():
 
 @admin_bp.route('/users/create', methods=['POST'])
 def create_user():
-    username = request.form.get('username', '').strip()
-    password = request.form.get('password', '')
-    display_name = request.form.get('display_name', '').strip()
+    username = request.form.get('username', '').strip()[:50]
+    password = request.form.get('password', '')[:200]
+    display_name = request.form.get('display_name', '').strip()[:100]
     is_admin = 1 if request.form.get('is_admin') else 0
     if not username or not password or not display_name:
         return redirect(url_for('admin.users') + '?error=err_all_fields')
+    if len(password) < 4:
+        return redirect(url_for('admin.users') + '?error=err_password_too_short')
     try:
         with get_db() as conn:
             conn.execute(
@@ -65,10 +67,12 @@ def create_user():
 
 @admin_bp.route('/users/<int:uid>/edit', methods=['POST'])
 def edit_user(uid):
-    display_name = request.form.get('display_name', '').strip()
-    password = request.form.get('password', '')
+    display_name = request.form.get('display_name', '').strip()[:100]
+    password = request.form.get('password', '')[:200]
     is_active = 1 if request.form.get('is_active') else 0
     is_admin = 1 if request.form.get('is_admin') else 0
+    if not display_name:
+        return redirect(url_for('admin.users') + '?error=err_all_fields')
     with get_db() as conn:
         if password:
             conn.execute(
@@ -118,11 +122,17 @@ def matches():
 def create_match():
     f = request.form
     season_id = f.get('season_id')
-    home_team = f.get('home_team', '').strip()
-    away_team = f.get('away_team', '').strip()
-    match_date = f.get('match_date', '').replace('T', ' ')
-    round_ = f.get('round', '').strip() or None
+    home_team = f.get('home_team', '').strip()[:100]
+    away_team = f.get('away_team', '').strip()[:100]
+    match_date = f.get('match_date', '').replace('T', ' ')[:20]
+    round_ = (f.get('round', '').strip() or None)
+    if round_:
+        round_ = round_[:50]
     if not all([season_id, home_team, away_team, match_date]):
+        return redirect(url_for('admin.matches') + '?error=err_all_fields')
+    try:
+        int(season_id)
+    except (TypeError, ValueError):
         return redirect(url_for('admin.matches') + '?error=err_all_fields')
     with get_db() as conn:
         conn.execute(
@@ -166,12 +176,19 @@ def upload_matches():
 @admin_bp.route('/matches/<int:mid>/edit', methods=['POST'])
 def edit_match(mid):
     f = request.form
+    home_team = f.get('home_team', '').strip()[:100]
+    away_team = f.get('away_team', '').strip()[:100]
+    match_date = f.get('match_date', '').replace('T', ' ')[:20]
+    round_ = (f.get('round', '').strip() or None)
+    if round_:
+        round_ = round_[:50]
+    season_id = f.get('season_id')
+    if not all([home_team, away_team, match_date, season_id]):
+        return redirect(url_for('admin.matches') + '?error=err_all_fields')
     with get_db() as conn:
         conn.execute(
             'UPDATE matches SET home_team=?, away_team=?, match_date=?, round=?, season_id=? WHERE id=?',
-            (f.get('home_team'), f.get('away_team'),
-             f.get('match_date', '').replace('T', ' '),
-             f.get('round') or None, f.get('season_id'), mid)
+            (home_team, away_team, match_date, round_, season_id, mid)
         )
         conn.commit()
     return redirect(url_for('admin.matches') + '?success=msg_match_updated')
@@ -179,8 +196,13 @@ def edit_match(mid):
 
 @admin_bp.route('/matches/<int:mid>/result', methods=['POST'])
 def set_result(mid):
-    home_score = int(request.form.get('home_score', 0))
-    away_score = int(request.form.get('away_score', 0))
+    try:
+        home_score = int(request.form.get('home_score', ''))
+        away_score = int(request.form.get('away_score', ''))
+    except (TypeError, ValueError):
+        return redirect(url_for('admin.matches') + '?error=err_all_fields')
+    if not (0 <= home_score <= 99 and 0 <= away_score <= 99):
+        return redirect(url_for('admin.matches') + '?error=err_all_fields')
     with get_db() as conn:
         conn.execute(
             'UPDATE matches SET home_score=?, away_score=?, status=? WHERE id=?',
@@ -220,7 +242,7 @@ def seasons():
 
 @admin_bp.route('/seasons/create', methods=['POST'])
 def create_season():
-    name = request.form.get('name', '').strip()
+    name = request.form.get('name', '').strip()[:100]
     if not name:
         return redirect(url_for('admin.seasons') + '?error=err_season_name_required')
     with get_db() as conn:

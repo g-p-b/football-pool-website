@@ -191,6 +191,7 @@
   "err_cannot_delete_admin": "Az utolsó admin nem törölhető",
   "err_season_has_matches": "Mérkőzéseket tartalmazó szezon nem törölhető",
   "err_season_name_required": "A szezon neve kötelező",
+  "err_password_too_short": "A jelszónak legalább 4 karakter hosszúnak kell lennie",
 
   "js_bet_saved": "Tipp elmentve! \u26bd",
   "js_bet_error": "Nem sikerült menteni a tippet",
