@@ -29,6 +29,7 @@
             <a href="/set-language/de" class="lang-btn {% if current_lang == 'de' %}active{% endif %}">DE</a>
         </div>
         <span class="nav-user"><i class="fa fa-user-shield"></i> {{ session.display_name }}</span>
+        <a href="/account" class="btn btn-ghost btn-sm" title="{{ t('nav_account') }}"><i class="fa fa-user-gear"></i><span class="nav-label"> {{ t('nav_account') }}</span></a>
         <a href="/logout" class="btn btn-ghost btn-sm"><i class="fa fa-right-from-bracket"></i><span class="nav-label"> {{ t('nav_logout') }}</span></a>
     </div>
 </nav>

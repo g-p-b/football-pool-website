@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 from database import get_db
 from extensions import limiter
 from functools import wraps
@@ -108,6 +108,36 @@ def dashboard():
     return render_template('dashboard.html',
         matches=matches, leaderboard=leaderboard,
         stats=stats, season=season)
+
+
+@auth_bp.route('/account', methods=['GET', 'POST'])
+@login_required
+def account():
+    error = None
+    success = None
+    if request.method == 'POST':
+        current_pw  = request.form.get('current_password', '')
+        new_pw      = request.form.get('new_password', '')[:200]
+        confirm_pw  = request.form.get('confirm_password', '')[:200]
+        if not current_pw or not new_pw or not confirm_pw:
+            error = 'err_all_fields'
+        elif new_pw != confirm_pw:
+            error = 'err_passwords_no_match'
+        elif len(new_pw) < 4:
+            error = 'err_password_too_short'
+        else:
+            with get_db() as conn:
+                user = conn.execute('SELECT * FROM users WHERE id=?',
+                                    (session['user_id'],)).fetchone()
+                if not check_password_hash(user['password'], current_pw):
+                    error = 'err_wrong_password'
+                else:
+                    conn.execute('UPDATE users SET password=? WHERE id=?',
+                                 (generate_password_hash(new_pw, method='pbkdf2:sha256'),
+                                  session['user_id']))
+                    conn.commit()
+                    success = 'msg_password_changed'
+    return render_template('account.html', error=error, success=success)
 
 
 @auth_bp.route('/rankings')
