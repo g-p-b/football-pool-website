@@ -11,7 +11,7 @@ from datetime import datetime
 
 # ── Load translations ────────────────────────────────────────────────────────
 TRANSLATIONS = {}
-for _lang in ('en', 'hu'):
+for _lang in ('en', 'hu', 'es', 'de'):
     _path = os.path.join(os.path.dirname(__file__), 'translations', f'{_lang}.json')
     with open(_path, encoding='utf-8') as _f:
         TRANSLATIONS[_lang] = json.load(_f)
@@ -54,7 +54,7 @@ def inject_t():
 # ── Language switch ──────────────────────────────────────────────────────────
 @app.route('/set-language/<lang>')
 def set_language(lang):
-    if lang in ('en', 'hu'):
+    if lang in ('en', 'hu', 'es', 'de'):
         session['language'] = lang
         if 'user_id' in session:
             with get_db() as conn:

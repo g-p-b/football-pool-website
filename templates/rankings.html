@@ -15,6 +15,8 @@
         <div class="lang-switcher">
             <a href="/set-language/en" class="lang-btn {% if current_lang == 'en' %}active{% endif %}">EN</a>
             <a href="/set-language/hu" class="lang-btn {% if current_lang == 'hu' %}active{% endif %}">HU</a>
+            <a href="/set-language/es" class="lang-btn {% if current_lang == 'es' %}active{% endif %}">ES</a>
+            <a href="/set-language/de" class="lang-btn {% if current_lang == 'de' %}active{% endif %}">DE</a>
         </div>
         <span class="nav-user"><i class="fa fa-user-circle"></i> {{ session.display_name }}</span>
         <a href="/logout" class="btn btn-ghost btn-sm"><i class="fa fa-right-from-bracket"></i> {{ t('nav_logout') }}</a>
