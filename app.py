@@ -82,7 +82,24 @@ def inject_t():
     return dict(t=t_safe, trans_js=trans_js, current_lang=session.get('language', 'en'))
 
 
-# ── Language switch ──────────────────────────────────────────────────────────
+# ── PWA routes ───────────────────────────────────────────────────────────────
+@app.route('/sw.js')
+def sw():
+    resp = app.send_static_file('sw.js')
+    resp.headers['Content-Type'] = 'application/javascript'
+    resp.headers['Service-Worker-Allowed'] = '/'
+    resp.headers['Cache-Control'] = 'no-cache'
+    return resp
+
+
+@app.route('/manifest.json')
+def manifest():
+    resp = app.send_static_file('manifest.json')
+    resp.headers['Content-Type'] = 'application/manifest+json'
+    return resp
+
+
+# ── Language switch ───────────────────────────────────────────────────────────
 @app.route('/set-language/<lang>')
 def set_language(lang):
     if lang in ('en', 'hu', 'es', 'de'):
