@@ -135,8 +135,20 @@ def rankings():
                 GROUP BY u.id
                 ORDER BY total_points DESC, exact_scores DESC, wins DESC
             ''', (selected_season['id'],)).fetchall()
-            if leaderboard:
-                max_points = max(e['total_points'] for e in leaderboard) or 1
+            # Convert to dicts and assign tie-aware ranks
+            lb = [dict(e) for e in leaderboard]
+            for i, entry in enumerate(lb):
+                if i == 0:
+                    entry['rank'] = 1
+                else:
+                    prev = lb[i - 1]
+                    if (entry['total_points'] == prev['total_points'] and
+                            entry['exact_scores'] == prev['exact_scores']):
+                        entry['rank'] = prev['rank']  # same rank = tie
+                    else:
+                        entry['rank'] = i + 1  # skip numbers for tied groups
+            leaderboard = lb
+            max_points = max((e['total_points'] for e in leaderboard), default=1) or 1
 
     return render_template('rankings.html',
         leaderboard=leaderboard, seasons=seasons,
