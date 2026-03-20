@@ -50,7 +50,7 @@ def create_user():
     display_name = request.form.get('display_name', '').strip()
     is_admin = 1 if request.form.get('is_admin') else 0
     if not username or not password or not display_name:
-        return redirect(url_for('admin.users') + '?error=All+fields+required')
+        return redirect(url_for('admin.users') + '?error=err_all_fields')
     try:
         with get_db() as conn:
             conn.execute(
@@ -58,9 +58,9 @@ def create_user():
                 (username, generate_password_hash(password, method='pbkdf2:sha256'), display_name, is_admin)
             )
             conn.commit()
-        return redirect(url_for('admin.users') + '?success=User+created+successfully')
+        return redirect(url_for('admin.users') + '?success=msg_user_created')
     except Exception:
-        return redirect(url_for('admin.users') + '?error=Username+already+exists')
+        return redirect(url_for('admin.users') + '?error=err_username_exists')
 
 
 @admin_bp.route('/users/<int:uid>/edit', methods=['POST'])
@@ -81,7 +81,7 @@ def edit_user(uid):
                 (display_name, is_active, is_admin, uid)
             )
         conn.commit()
-    return redirect(url_for('admin.users') + '?success=User+updated')
+    return redirect(url_for('admin.users') + '?success=msg_user_updated')
 
 
 @admin_bp.route('/users/<int:uid>/delete', methods=['POST'])
@@ -90,11 +90,11 @@ def delete_user(uid):
         admins = conn.execute('SELECT COUNT(*) FROM users WHERE is_admin=1').fetchone()[0]
         user = conn.execute('SELECT * FROM users WHERE id=?', (uid,)).fetchone()
         if user and user['is_admin'] and admins <= 1:
-            return redirect(url_for('admin.users') + '?error=Cannot+delete+last+admin')
+            return redirect(url_for('admin.users') + '?error=err_cannot_delete_admin')
         conn.execute('DELETE FROM bets WHERE user_id=?', (uid,))
         conn.execute('DELETE FROM users WHERE id=?', (uid,))
         conn.commit()
-    return redirect(url_for('admin.users') + '?success=User+deleted')
+    return redirect(url_for('admin.users') + '?success=msg_user_deleted')
 
 
 # ── MATCHES ──────────────────────────────────────────────────────────────────
@@ -123,25 +123,25 @@ def create_match():
     match_date = f.get('match_date', '').replace('T', ' ')
     round_ = f.get('round', '').strip() or None
     if not all([season_id, home_team, away_team, match_date]):
-        return redirect(url_for('admin.matches') + '?error=All+fields+required')
+        return redirect(url_for('admin.matches') + '?error=err_all_fields')
     with get_db() as conn:
         conn.execute(
             'INSERT INTO matches (season_id, home_team, away_team, match_date, round) VALUES (?,?,?,?,?)',
             (season_id, home_team, away_team, match_date, round_)
         )
         conn.commit()
-    return redirect(url_for('admin.matches') + '?success=Match+added')
+    return redirect(url_for('admin.matches') + '?success=msg_match_added')
 
 
 @admin_bp.route('/matches/upload', methods=['POST'])
 def upload_matches():
     file = request.files.get('csvfile')
     if not file:
-        return redirect(url_for('admin.matches') + '?error=No+file+selected')
+        return redirect(url_for('admin.matches') + '?error=err_no_file')
     with get_db() as conn:
         active = conn.execute('SELECT * FROM seasons WHERE is_active=1').fetchone()
         if not active:
-            return redirect(url_for('admin.matches') + '?error=No+active+season')
+            return redirect(url_for('admin.matches') + '?error=err_no_active_season')
         try:
             content = file.read().decode('utf-8-sig')
             reader = csv.DictReader(io.StringIO(content))
@@ -159,8 +159,8 @@ def upload_matches():
                     count += 1
             conn.commit()
         except Exception as e:
-            return redirect(url_for('admin.matches') + f'?error=CSV+error:+{str(e)[:50]}')
-    return redirect(url_for('admin.matches') + f'?success={count}+matches+imported')
+            return redirect(url_for('admin.matches') + '?error=err_csv_error')
+    return redirect(url_for('admin.matches') + f'?success=msg_imported&count={count}')
 
 
 @admin_bp.route('/matches/<int:mid>/edit', methods=['POST'])
@@ -174,7 +174,7 @@ def edit_match(mid):
              f.get('round') or None, f.get('season_id'), mid)
         )
         conn.commit()
-    return redirect(url_for('admin.matches') + '?success=Match+updated')
+    return redirect(url_for('admin.matches') + '?success=msg_match_updated')
 
 
 @admin_bp.route('/matches/<int:mid>/result', methods=['POST'])
@@ -191,7 +191,7 @@ def set_result(mid):
             pts = calc_points(bet['home_score'], bet['away_score'], home_score, away_score)
             conn.execute('UPDATE bets SET points=? WHERE id=?', (pts, bet['id']))
         conn.commit()
-    return redirect(url_for('admin.matches') + '?success=Result+set+and+points+calculated')
+    return redirect(url_for('admin.matches') + '?success=msg_result_set')
 
 
 @admin_bp.route('/matches/<int:mid>/delete', methods=['POST'])
@@ -200,7 +200,7 @@ def delete_match(mid):
         conn.execute('DELETE FROM bets WHERE match_id=?', (mid,))
         conn.execute('DELETE FROM matches WHERE id=?', (mid,))
         conn.commit()
-    return redirect(url_for('admin.matches') + '?success=Match+deleted')
+    return redirect(url_for('admin.matches') + '?success=msg_match_deleted')
 
 
 # ── SEASONS ──────────────────────────────────────────────────────────────────
@@ -222,11 +222,11 @@ def seasons():
 def create_season():
     name = request.form.get('name', '').strip()
     if not name:
-        return redirect(url_for('admin.seasons') + '?error=Season+name+required')
+        return redirect(url_for('admin.seasons') + '?error=err_season_name_required')
     with get_db() as conn:
         conn.execute('INSERT INTO seasons (name) VALUES (?)', (name,))
         conn.commit()
-    return redirect(url_for('admin.seasons') + '?success=Season+created')
+    return redirect(url_for('admin.seasons') + '?success=msg_season_created')
 
 
 @admin_bp.route('/seasons/<int:sid>/activate', methods=['POST'])
@@ -235,7 +235,7 @@ def activate_season(sid):
         conn.execute('UPDATE seasons SET is_active=0')
         conn.execute('UPDATE seasons SET is_active=1 WHERE id=?', (sid,))
         conn.commit()
-    return redirect(url_for('admin.seasons') + '?success=Season+activated')
+    return redirect(url_for('admin.seasons') + '?success=msg_season_activated')
 
 
 @admin_bp.route('/seasons/<int:sid>/delete', methods=['POST'])
@@ -243,7 +243,7 @@ def delete_season(sid):
     with get_db() as conn:
         count = conn.execute('SELECT COUNT(*) FROM matches WHERE season_id=?', (sid,)).fetchone()[0]
         if count > 0:
-            return redirect(url_for('admin.seasons') + '?error=Cannot+delete+season+with+matches')
+            return redirect(url_for('admin.seasons') + '?error=err_season_has_matches')
         conn.execute('DELETE FROM seasons WHERE id=?', (sid,))
         conn.commit()
-    return redirect(url_for('admin.seasons') + '?success=Season+deleted')
+    return redirect(url_for('admin.seasons') + '?success=msg_season_deleted')

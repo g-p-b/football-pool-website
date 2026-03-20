@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ current_lang }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,6 +13,7 @@
 <body>
 {% block body %}{% block content %}{% endblock %}{% endblock %}
 <div id="toast" class="toast"></div>
+<script>window.TRANS = {{ trans_js | tojson }};</script>
 <script src="/static/js/main.js"></script>
 {% block scripts %}{% endblock %}
 </body>

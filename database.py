@@ -55,6 +55,13 @@ def init_db():
                 UNIQUE(user_id, match_id)
             );
         ''')
+        # Add language column if upgrading from older version
+        try:
+            conn.execute("ALTER TABLE users ADD COLUMN language TEXT DEFAULT 'en'")
+            conn.commit()
+        except Exception:
+            pass  # Column already exists
+
         count = conn.execute('SELECT COUNT(*) FROM users').fetchone()[0]
         if count == 0:
             pw = generate_password_hash('admin123', method='pbkdf2:sha256')

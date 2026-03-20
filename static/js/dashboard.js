@@ -12,6 +12,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+function tr(key) {
+    return (window.TRANS && window.TRANS[key]) || key;
+}
+
 async function saveBet(matchId) {
     const card = document.querySelector(`.match-card[data-match-id="${matchId}"]`);
     if (!card) return;
@@ -27,7 +31,7 @@ async function saveBet(matchId) {
     const awayVal = awayInput.value.trim();
 
     if (homeVal === '' || awayVal === '') {
-        setStatus(statusEl, 'error', '<i class="fa fa-circle-exclamation"></i> Enter both scores');
+        setStatus(statusEl, 'error', `<i class="fa fa-circle-exclamation"></i> ${tr('js_enter_scores')}`);
         return;
     }
 
@@ -35,14 +39,14 @@ async function saveBet(matchId) {
     const away = parseInt(awayVal);
 
     if (isNaN(home) || isNaN(away) || home < 0 || away < 0) {
-        setStatus(statusEl, 'error', '<i class="fa fa-circle-exclamation"></i> Invalid scores');
+        setStatus(statusEl, 'error', `<i class="fa fa-circle-exclamation"></i> ${tr('js_invalid_scores')}`);
         return;
     }
 
     // UI: saving state
     btn.disabled = true;
-    btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> <span>Saving…</span>';
-    setStatus(statusEl, 'saving', '<i class="fa fa-spinner fa-spin"></i> Saving…');
+    btn.innerHTML = `<i class="fa fa-spinner fa-spin"></i> <span>${tr('js_saving')}</span>`;
+    setStatus(statusEl, 'saving', `<i class="fa fa-spinner fa-spin"></i> ${tr('js_saving')}`);
 
     try {
         const res = await fetch('/api/bet', {
@@ -53,18 +57,18 @@ async function saveBet(matchId) {
         const data = await res.json();
 
         if (data.ok) {
-            btn.innerHTML = '<i class="fa fa-floppy-disk"></i> <span>Update</span>';
-            setStatus(statusEl, 'saved', '<i class="fa fa-check"></i> Bet saved');
-            showToast('Bet saved! ⚽', 'success');
+            btn.innerHTML = `<i class="fa fa-floppy-disk"></i> <span>${tr('bet_update')}</span>`;
+            setStatus(statusEl, 'saved', `<i class="fa fa-check"></i> ${tr('bet_saved_indicator')}`);
+            showToast(tr('js_bet_saved'), 'success');
         } else {
-            btn.innerHTML = '<i class="fa fa-floppy-disk"></i> <span>Save Bet</span>';
-            setStatus(statusEl, 'error', `<i class="fa fa-circle-exclamation"></i> ${data.error || 'Error saving'}`);
-            showToast(data.error || 'Could not save bet', 'error');
+            btn.innerHTML = `<i class="fa fa-floppy-disk"></i> <span>${tr('bet_save')}</span>`;
+            setStatus(statusEl, 'error', `<i class="fa fa-circle-exclamation"></i> ${data.error || tr('js_bet_error')}`);
+            showToast(data.error || tr('js_bet_error'), 'error');
         }
     } catch (err) {
-        btn.innerHTML = '<i class="fa fa-floppy-disk"></i> <span>Save Bet</span>';
-        setStatus(statusEl, 'error', '<i class="fa fa-wifi"></i> Network error');
-        showToast('Network error, please try again', 'error');
+        btn.innerHTML = `<i class="fa fa-floppy-disk"></i> <span>${tr('bet_save')}</span>`;
+        setStatus(statusEl, 'error', `<i class="fa fa-wifi"></i> ${tr('js_network_error')}`);
+        showToast(tr('js_network_error'), 'error');
     } finally {
         btn.disabled = false;
     }

@@ -1,15 +1,15 @@
 {% extends "admin/base.html" %}
-{% block title %}Users — Football Pool Admin{% endblock %}
+{% block title %}{{ t('users_title') }} — Football Pool{% endblock %}
 {% block content %}
 <div class="page-header">
-    <h1><i class="fa fa-users"></i> Users</h1>
+    <h1><i class="fa fa-users"></i> {{ t('users_title') }}</h1>
     <button class="btn btn-primary" onclick="openCreateUserModal()">
-        <i class="fa fa-plus"></i> Add User
+        <i class="fa fa-plus"></i> {{ t('btn_add_user') }}
     </button>
 </div>
 
-{% if success %}<div class="alert alert-success"><i class="fa fa-check-circle"></i> {{ success }}</div>{% endif %}
-{% if error %}<div class="alert alert-error"><i class="fa fa-circle-exclamation"></i> {{ error }}</div>{% endif %}
+{% if success %}<div class="alert alert-success"><i class="fa fa-check-circle"></i> {{ t(success) }}</div>{% endif %}
+{% if error %}<div class="alert alert-error"><i class="fa fa-circle-exclamation"></i> {{ t(error) }}</div>{% endif %}
 
 <div class="card">
     <div class="card-body p0">
@@ -17,12 +17,12 @@
             <thead>
                 <tr>
                     <th>#</th>
-                    <th>Username</th>
-                    <th>Display Name</th>
-                    <th>Role</th>
-                    <th>Status</th>
-                    <th>Created</th>
-                    <th>Actions</th>
+                    <th>{{ t('col_username') }}</th>
+                    <th>{{ t('col_display_name') }}</th>
+                    <th>{{ t('col_role') }}</th>
+                    <th>{{ t('col_status') }}</th>
+                    <th>{{ t('col_created') }}</th>
+                    <th>{{ t('col_actions') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -33,25 +33,25 @@
                     <td>{{ u['display_name'] }}</td>
                     <td>
                         {% if u['is_admin'] %}
-                        <span class="role-badge admin"><i class="fa fa-shield-halved"></i> Admin</span>
+                        <span class="role-badge admin"><i class="fa fa-shield-halved"></i> {{ t('role_admin') }}</span>
                         {% else %}
-                        <span class="role-badge player"><i class="fa fa-user"></i> Player</span>
+                        <span class="role-badge player"><i class="fa fa-user"></i> {{ t('role_player') }}</span>
                         {% endif %}
                     </td>
                     <td>
                         {% if u['is_active'] %}
-                        <span class="status-badge active"><i class="fa fa-circle"></i> Active</span>
+                        <span class="status-badge active"><i class="fa fa-circle"></i> {{ t('status_active') }}</span>
                         {% else %}
-                        <span class="status-badge inactive"><i class="fa fa-circle"></i> Disabled</span>
+                        <span class="status-badge inactive"><i class="fa fa-circle"></i> {{ t('status_disabled') }}</span>
                         {% endif %}
                     </td>
                     <td class="text-dim">{{ u['created_at'][:10] }}</td>
                     <td class="action-cell">
                         <button class="btn btn-ghost btn-xs" onclick="openEditUserModal({{ u | tojson }})">
-                            <i class="fa fa-pen"></i> Edit
+                            <i class="fa fa-pen"></i> {{ t('btn_edit') }}
                         </button>
                         <form method="POST" action="/admin/users/{{ u['id'] }}/delete" style="display:inline"
-                            onsubmit="return confirm('Delete user {{ u['username'] }}? All their bets will be removed.')">
+                            onsubmit="return confirm('{{ t('delete_user_confirm') }} {{ u['username'] }}? {{ t('delete_user_confirm2') }}')">
                             <button type="submit" class="btn btn-danger btn-xs">
                                 <i class="fa fa-trash"></i>
                             </button>
@@ -59,7 +59,7 @@
                     </td>
                 </tr>
                 {% else %}
-                <tr><td colspan="7" class="empty-state">No users yet.</td></tr>
+                <tr><td colspan="7" class="empty-state">{{ t('no_users') }}</td></tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -70,54 +70,54 @@
 {% block scripts %}
 <script>
 function openCreateUserModal() {
-    setModal('Create New User', `
+    setModal('{{ t("modal_create_user") | e }}', `
         <form method="POST" action="/admin/users/create">
             <div class="form-group">
-                <label>Username</label>
-                <input type="text" name="username" required placeholder="e.g. john_doe" autofocus>
+                <label>{{ t("label_username") | e }}</label>
+                <input type="text" name="username" required placeholder="{{ t('label_username_ph') | e }}" autofocus>
             </div>
             <div class="form-group">
-                <label>Display Name</label>
-                <input type="text" name="display_name" required placeholder="e.g. John Doe">
+                <label>{{ t("label_display_name") | e }}</label>
+                <input type="text" name="display_name" required placeholder="{{ t('label_display_name_ph') | e }}">
             </div>
             <div class="form-group">
-                <label>Password</label>
-                <input type="password" name="password" required placeholder="Set initial password">
+                <label>{{ t("label_password") | e }}</label>
+                <input type="password" name="password" required placeholder="{{ t('label_initial_password_ph') | e }}">
             </div>
             <div class="form-check">
                 <input type="checkbox" name="is_admin" id="ca_admin">
-                <label for="ca_admin">Grant admin access</label>
+                <label for="ca_admin">{{ t("label_grant_admin") | e }}</label>
             </div>
             <div class="form-actions">
-                <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-                <button type="submit" class="btn btn-primary"><i class="fa fa-plus"></i> Create User</button>
+                <button type="button" class="btn btn-ghost" onclick="closeModal()">{{ t("btn_cancel") | e }}</button>
+                <button type="submit" class="btn btn-primary"><i class="fa fa-plus"></i> {{ t("btn_create_user") | e }}</button>
             </div>
         </form>
     `);
 }
 
 function openEditUserModal(u) {
-    setModal('Edit User: ' + u.username, `
+    setModal('{{ t("modal_edit_user") | e }}: ' + u.username, `
         <form method="POST" action="/admin/users/${u.id}/edit">
             <div class="form-group">
-                <label>Display Name</label>
+                <label>{{ t("label_display_name") | e }}</label>
                 <input type="text" name="display_name" required value="${escHtml(u.display_name)}">
             </div>
             <div class="form-group">
-                <label>New Password <span class="text-dim">(leave blank to keep current)</span></label>
-                <input type="password" name="password" placeholder="Enter new password">
+                <label>{{ t("label_new_password") | e }} <span class="text-dim">({{ t("label_keep_current") | e }})</span></label>
+                <input type="password" name="password" placeholder="{{ t('label_new_password') | e }}">
             </div>
             <div class="form-check">
                 <input type="checkbox" name="is_admin" id="ea_admin" ${u.is_admin ? 'checked' : ''}>
-                <label for="ea_admin">Admin access</label>
+                <label for="ea_admin">{{ t("label_admin_access") | e }}</label>
             </div>
             <div class="form-check">
                 <input type="checkbox" name="is_active" id="ea_active" ${u.is_active ? 'checked' : ''}>
-                <label for="ea_active">Account active</label>
+                <label for="ea_active">{{ t("label_account_active") | e }}</label>
             </div>
             <div class="form-actions">
-                <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-                <button type="submit" class="btn btn-primary"><i class="fa fa-floppy-disk"></i> Save Changes</button>
+                <button type="button" class="btn btn-ghost" onclick="closeModal()">{{ t("btn_cancel") | e }}</button>
+                <button type="submit" class="btn btn-primary"><i class="fa fa-floppy-disk"></i> {{ t("btn_save_changes") | e }}</button>
             </div>
         </form>
     `);

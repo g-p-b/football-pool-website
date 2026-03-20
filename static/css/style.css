@@ -911,6 +911,28 @@ select option { background: var(--bg5); }
     overflow-x: auto;
 }
 
+/* ─── Language Switcher ─────────────────────────────────────────────────── */
+.lang-switcher {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    background: var(--bg5);
+    border: 1px solid var(--border2);
+    border-radius: var(--r-sm);
+    padding: 2px;
+}
+.lang-btn {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    color: var(--text2);
+    letter-spacing: 0.03em;
+    transition: var(--transition);
+}
+.lang-btn:hover { color: var(--text1); background: var(--bg4); }
+.lang-btn.active { color: #000; background: var(--green); }
+
 /* ─── Nav Links (user navbar) ───────────────────────────────────────────── */
 .nav-links {
     display: flex;

@@ -1,27 +1,27 @@
 {% extends "admin/base.html" %}
-{% block title %}Seasons — Football Pool Admin{% endblock %}
+{% block title %}{{ t('seasons_title') }} — Football Pool{% endblock %}
 {% block content %}
 <div class="page-header">
-    <h1><i class="fa fa-calendar"></i> Seasons</h1>
+    <h1><i class="fa fa-calendar"></i> {{ t('seasons_title') }}</h1>
     <button class="btn btn-primary" onclick="openCreateSeasonModal()">
-        <i class="fa fa-plus"></i> New Season
+        <i class="fa fa-plus"></i> {{ t('btn_new_season') }}
     </button>
 </div>
 
-{% if success %}<div class="alert alert-success"><i class="fa fa-check-circle"></i> {{ success }}</div>{% endif %}
-{% if error %}<div class="alert alert-error"><i class="fa fa-circle-exclamation"></i> {{ error }}</div>{% endif %}
+{% if success %}<div class="alert alert-success"><i class="fa fa-check-circle"></i> {{ t(success) }}</div>{% endif %}
+{% if error %}<div class="alert alert-error"><i class="fa fa-circle-exclamation"></i> {{ t(error) }}</div>{% endif %}
 
 <div class="card">
     <div class="card-body p0">
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>Season Name</th>
-                    <th>Status</th>
-                    <th>Matches</th>
-                    <th>Total Bets</th>
-                    <th>Created</th>
-                    <th>Actions</th>
+                    <th>{{ t('col_season_name') }}</th>
+                    <th>{{ t('col_status') }}</th>
+                    <th>{{ t('col_match_count') }}</th>
+                    <th>{{ t('col_bet_count') }}</th>
+                    <th>{{ t('col_created') }}</th>
+                    <th>{{ t('col_actions') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -30,9 +30,9 @@
                     <td><strong>{{ s['name'] }}</strong></td>
                     <td>
                         {% if s['is_active'] %}
-                        <span class="status-badge active"><i class="fa fa-circle-check"></i> Active</span>
+                        <span class="status-badge active"><i class="fa fa-circle-check"></i> {{ t('status_active') }}</span>
                         {% else %}
-                        <span class="status-badge inactive">Inactive</span>
+                        <span class="status-badge inactive">{{ t('status_inactive') }}</span>
                         {% endif %}
                     </td>
                     <td>{{ s['match_count'] }}</td>
@@ -42,20 +42,20 @@
                         {% if not s['is_active'] %}
                         <form method="POST" action="/admin/seasons/{{ s['id'] }}/activate" style="display:inline">
                             <button type="submit" class="btn btn-success btn-xs">
-                                <i class="fa fa-circle-check"></i> Activate
+                                <i class="fa fa-circle-check"></i> {{ t('btn_activate') }}
                             </button>
                         </form>
                         {% endif %}
                         {% if not s['is_active'] and s['match_count'] == 0 %}
                         <form method="POST" action="/admin/seasons/{{ s['id'] }}/delete" style="display:inline"
-                            onsubmit="return confirm('Delete season {{ s['name'] }}?')">
+                            onsubmit="return confirm('{{ t('delete_season_confirm') | e }}: {{ s['name'] | e }}?')">
                             <button type="submit" class="btn btn-danger btn-xs"><i class="fa fa-trash"></i></button>
                         </form>
                         {% endif %}
                     </td>
                 </tr>
                 {% else %}
-                <tr><td colspan="6" class="empty-state">No seasons yet.</td></tr>
+                <tr><td colspan="6" class="empty-state">{{ t('no_seasons') }}</td></tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -66,19 +66,19 @@
 {% block scripts %}
 <script>
 function openCreateSeasonModal() {
-    setModal('Create New Season', `
+    setModal('{{ t("modal_create_season") | e }}', `
         <form method="POST" action="/admin/seasons/create">
             <div class="form-group">
-                <label>Season Name</label>
-                <input type="text" name="name" required placeholder="e.g. Season 2024/25" autofocus>
+                <label>{{ t("label_season_name") | e }}</label>
+                <input type="text" name="name" required placeholder="{{ t('label_season_name_ph') | e }}" autofocus>
             </div>
             <p class="text-dim" style="font-size:0.85rem">
                 <i class="fa fa-circle-info"></i>
-                After creating, go to the season and activate it to make it the current season.
+                {{ t("season_create_note") | e }}
             </p>
             <div class="form-actions">
-                <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-                <button type="submit" class="btn btn-primary"><i class="fa fa-plus"></i> Create Season</button>
+                <button type="button" class="btn btn-ghost" onclick="closeModal()">{{ t("btn_cancel") | e }}</button>
+                <button type="submit" class="btn btn-primary"><i class="fa fa-plus"></i> {{ t("btn_create_season") | e }}</button>
             </div>
         </form>
     `);

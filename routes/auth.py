@@ -48,6 +48,7 @@ def login():
             session['username'] = user['username']
             session['display_name'] = user['display_name']
             session['is_admin'] = bool(user['is_admin'])
+            session['language'] = user['language'] if user['language'] else 'en'
             return redirect(url_for('admin.dashboard') if user['is_admin'] else url_for('auth.dashboard'))
         error = 'Invalid username or password'
     return render_template('login.html', error=error)

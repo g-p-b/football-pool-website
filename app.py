@@ -1,12 +1,20 @@
-from flask import Flask
+from flask import Flask, session, request, redirect
 from flask.json.provider import DefaultJSONProvider
-from database import init_db
+from database import init_db, get_db
 from routes.auth import auth_bp
 from routes.admin import admin_bp
 from routes.api import api_bp
 import sqlite3
 import os
+import json
 from datetime import datetime
+
+# ── Load translations ────────────────────────────────────────────────────────
+TRANSLATIONS = {}
+for _lang in ('en', 'hu'):
+    _path = os.path.join(os.path.dirname(__file__), 'translations', f'{_lang}.json')
+    with open(_path, encoding='utf-8') as _f:
+        TRANSLATIONS[_lang] = json.load(_f)
 
 
 class Row2DictProvider(DefaultJSONProvider):
@@ -28,6 +36,35 @@ app.register_blueprint(admin_bp, url_prefix='/admin')
 app.register_blueprint(api_bp, url_prefix='/api')
 
 
+# ── Translation helper ───────────────────────────────────────────────────────
+@app.context_processor
+def inject_t():
+    def t(key):
+        lang = session.get('language', 'en')
+        return TRANSLATIONS.get(lang, TRANSLATIONS['en']).get(
+            key, TRANSLATIONS['en'].get(key, key)
+        )
+    # JS-relevant keys for inline script injection
+    lang = session.get('language', 'en')
+    trans_js = {k: v for k, v in TRANSLATIONS.get(lang, TRANSLATIONS['en']).items()
+                if k.startswith('js_')}
+    return dict(t=t, trans_js=trans_js, current_lang=session.get('language', 'en'))
+
+
+# ── Language switch ──────────────────────────────────────────────────────────
+@app.route('/set-language/<lang>')
+def set_language(lang):
+    if lang in ('en', 'hu'):
+        session['language'] = lang
+        if 'user_id' in session:
+            with get_db() as conn:
+                conn.execute('UPDATE users SET language=? WHERE id=?',
+                             (lang, session['user_id']))
+                conn.commit()
+    return redirect(request.referrer or '/')
+
+
+# ── Template filters ─────────────────────────────────────────────────────────
 @app.template_filter('fmt_date')
 def fmt_date(value):
     if not value:
@@ -41,7 +78,6 @@ def fmt_date(value):
 
 @app.template_filter('dt_local')
 def dt_local(value):
-    """Format for datetime-local input."""
     if not value:
         return ''
     try:
@@ -53,7 +89,6 @@ def dt_local(value):
 
 @app.template_filter('is_locked')
 def is_locked(match_date):
-    """True if match has started (betting closed)."""
     try:
         return datetime.now() >= datetime.fromisoformat(str(match_date))
     except Exception:
