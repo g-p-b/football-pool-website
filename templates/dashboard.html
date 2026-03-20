@@ -4,14 +4,14 @@
 <nav class="navbar">
     <div class="nav-brand">
         <span>⚽</span> Football Pool
-        {% if season %}<span class="season-badge">{{ season['name'] }}</span>{% endif %}
+        {% if season %}<span class="season-badge nav-label">{{ season['name'] }}</span>{% endif %}
     </div>
     <div class="nav-links">
         <a href="/dashboard" class="nav-link active">
-            <i class="fa fa-house"></i> {{ t('nav_dashboard') }}
+            <i class="fa fa-house"></i><span class="nav-label"> {{ t('nav_dashboard') }}</span>
         </a>
         <a href="/rankings" class="nav-link">
-            <i class="fa fa-ranking-star"></i> {{ t('nav_rankings') }}
+            <i class="fa fa-ranking-star"></i><span class="nav-label"> {{ t('nav_rankings') }}</span>
         </a>
     </div>
     <div class="nav-right">
@@ -22,7 +22,7 @@
             <a href="/set-language/de" class="lang-btn {% if current_lang == 'de' %}active{% endif %}">DE</a>
         </div>
         <span class="nav-user"><i class="fa fa-user-circle"></i> {{ session.display_name }}</span>
-        <a href="/logout" class="btn btn-ghost btn-sm"><i class="fa fa-right-from-bracket"></i> {{ t('nav_logout') }}</a>
+        <a href="/logout" class="btn btn-ghost btn-sm"><i class="fa fa-right-from-bracket"></i><span class="nav-label"> {{ t('nav_logout') }}</span></a>
     </div>
 </nav>
 

@@ -19,7 +19,7 @@
 <nav class="navbar admin-navbar">
     <div class="nav-brand">
         <span>⚽</span> Football Pool
-        <span class="admin-badge"><i class="fa fa-shield-halved"></i> {{ t('nav_admin_badge') }}</span>
+        <span class="admin-badge nav-label"><i class="fa fa-shield-halved"></i> {{ t('nav_admin_badge') }}</span>
     </div>
     <div class="nav-right">
         <div class="lang-switcher">
@@ -29,7 +29,7 @@
             <a href="/set-language/de" class="lang-btn {% if current_lang == 'de' %}active{% endif %}">DE</a>
         </div>
         <span class="nav-user"><i class="fa fa-user-shield"></i> {{ session.display_name }}</span>
-        <a href="/logout" class="btn btn-ghost btn-sm"><i class="fa fa-right-from-bracket"></i> {{ t('nav_logout') }}</a>
+        <a href="/logout" class="btn btn-ghost btn-sm"><i class="fa fa-right-from-bracket"></i><span class="nav-label"> {{ t('nav_logout') }}</span></a>
     </div>
 </nav>
 

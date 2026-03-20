@@ -1038,14 +1038,63 @@ select option { background: var(--bg5); }
     .dashboard-grid { grid-template-columns: 1fr; }
     .form-row { grid-template-columns: 1fr; }
 }
-@media (max-width: 600px) {
+
+@media (max-width: 640px) {
+    /* ── Navbar: two-row layout on mobile ── */
+    .navbar {
+        flex-wrap: wrap;
+        height: auto;
+        padding: 0 12px;
+        gap: 0;
+    }
+
+    /* Row 1: brand (grows) + nav-right (lang + logout) */
+    .nav-brand {
+        flex: 1 1 auto;
+        min-width: 0;
+        padding: 10px 0;
+    }
+    .nav-right {
+        padding: 10px 0;
+        gap: 6px;
+        flex-shrink: 0;
+    }
+
+    /* Hide labels, badges, username on mobile — icons only */
+    .nav-label { display: none; }
+    .nav-user  { display: none; }
+
+    /* Row 2: nav-links stretch full width below */
+    .nav-links {
+        order: 10;
+        width: 100%;
+        padding: 6px 0;
+        border-top: 1px solid var(--border);
+        justify-content: center;
+        gap: 4px;
+    }
+    .nav-link {
+        padding: 6px 16px;
+        font-size: 0.85rem;
+    }
+
+    /* Compact lang switcher */
+    .lang-btn {
+        padding: 3px 6px;
+        font-size: 0.7rem;
+    }
+
+    /* Admin tabs: already scrollable, just shrink text */
+    .tab { padding: 10px 12px; font-size: 0.8rem; }
+
+    /* General page padding */
+    .page-container  { padding: 14px; }
+    .admin-container { padding: 14px; }
+    .login-card { padding: 32px 20px; }
+
+    /* Tables */
     .stats-bar { grid-template-columns: 1fr 1fr; }
     .matches-grid { grid-template-columns: 1fr; }
-    .page-container { padding: 16px; }
-    .admin-container { padding: 16px; }
-    .navbar { padding: 0 16px; }
-    .login-card { padding: 32px 24px; }
-    .nav-user { display: none; }
     .data-table { font-size: 0.8rem; }
-    .data-table th, .data-table td { padding: 10px 10px; }
+    .data-table th, .data-table td { padding: 9px 10px; }
 }
